@@ -1,4 +1,4 @@
-class orchestrator {
+class orchestrator implements Serializable {
 
     def context
     boolean resultParallel
