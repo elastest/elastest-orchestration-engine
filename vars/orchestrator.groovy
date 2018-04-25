@@ -58,7 +58,7 @@ class orchestrator implements Serializable {
         String result = job.getResult()
         boolean verdict = (result == 'SUCCESS')
         if (!verdict && this.exitCondition == OrchestrationExitCondition.EXIT_ON_FAIL) {
-            this.@context.error(result)
+            this.@context.error(job.getMessage())
         }
         return verdict
     }
