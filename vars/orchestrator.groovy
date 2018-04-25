@@ -31,7 +31,7 @@ class orchestrator implements Serializable {
 
             boolean verdict = this.resultParallel
             if (!verdict && this.exitCondition == OrchestrationExitCondition.EXIT_ON_PARALLEL_FAILURE) {
-                this.@context.error(result)
+                this.@context.error(this.resultParallelMessage)
             }
 
             return this.resultParallel
