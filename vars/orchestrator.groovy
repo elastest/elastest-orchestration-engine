@@ -21,7 +21,7 @@ class orchestrator implements Serializable {
         initResultParallel()
         this.@context.stage(jobs.join(", ")) {
             def stepsForParallel = [:]
-            for (int i = 0; i < jobs.size; i++) {
+            for (int i = 0; i < jobs.length; i++) {
                 def job = jobs[i]
                 stepsForParallel["${job}"] = { -> buildParalleJob("${job}") }
             }
