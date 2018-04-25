@@ -3,7 +3,7 @@ class orchestrator implements Serializable {
     def context
     boolean resultParallel
     ParallelResultStrategy parallelResultStrategy = ParallelResultStrategy.AND
-    OrchestrationExitCondition exitCondition = OrchestrationExitCondition.EXIT_ON_FAIL
+    OrchestrationExitCondition exitCondition = OrchestrationExitCondition.EXIT_AT_END
 
     def runJob(String jobId) {
         this.@context.stage(jobId) { return buildJob(jobId) }
