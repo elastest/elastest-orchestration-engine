@@ -2,11 +2,12 @@ class orchestrator implements Serializable {
 
     def context
     boolean resultParallel
+    String resultParallelMessage
     ParallelResultStrategy parallelResultStrategy = ParallelResultStrategy.AND
-    OrchestrationExitCondition exitCondition = OrchestrationExitCondition.EXIT_AT_END
+    OrchestrationExitCondition exitCondition = OrchestrationExitCondition.EXIT_ON_PARALLEL_FAILURE
 
     def runJob(String jobId) {
-        this.@context.stage(jobId) { return buildJob(jobId) }
+        this.@context.stage(jobId) { return getVerdict(buildJob(jobId)) }
     }
 
     def runJobDependingOn(boolean result, String job1Id, String job2Id) {
@@ -27,6 +28,12 @@ class orchestrator implements Serializable {
                 stepsForParallel["${job}"] = { -> buildParalleJob("${job}") }
             }
             this.@context.parallel stepsForParallel
+
+            boolean verdict = this.resultParallel
+            if (!verdict && this.exitCondition == OrchestrationExitCondition.EXIT_ON_PARALLEL_FAILURE) {
+                this.@context.error(result)
+            }
+
             return this.resultParallel
         }
     }
@@ -38,6 +45,7 @@ class orchestrator implements Serializable {
         else if (this.parallelResultStrategy == ParallelResultStrategy.OR) {
             this.resultParallel = false
         }
+        this.resultParallelMessage = ''
     }
 
     def updateResultParallel(boolean result) {
@@ -50,12 +58,20 @@ class orchestrator implements Serializable {
     }
 
     def buildParalleJob(String jobId) {
-        updateResultParallel(buildJob(jobId))
+        String result = buildJob(jobId);
+        updateResultParallel(getVerdict(result))
+        if (this.resultParallelMessage != '') {
+            this.resultParallelMessage += ', '
+        }
+        this.resultParallelMessage += jobId "=" + result
     }
 
     def buildJob(String jobId) {
         def job = this.@context.build job: jobId, propagate: false
-        String result = job.getResult()
+        return job.getResult()
+    }
+
+    def getVerdict(String result) {
         boolean verdict = (result == 'SUCCESS')
         if (!verdict && this.exitCondition == OrchestrationExitCondition.EXIT_ON_FAIL) {
             this.@context.error(result)
