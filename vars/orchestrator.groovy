@@ -51,10 +51,10 @@ class orchestrator implements Serializable {
     def updateResultParallel(String result) {
         boolean verdict = getVerdict(result)
         if (this.parallelResultStrategy == ParallelResultStrategy.AND) {
-            this.resultParallel &= verdict
+            this.resultParallel |= verdict
         }
         else if (this.parallelResultStrategy == ParallelResultStrategy.OR) {
-            this.resultParallel |= verdict
+            this.resultParallel &= verdict
         }
     }
 
