@@ -45,25 +45,27 @@ class orchestrator implements Serializable {
         else if (this.parallelResultStrategy == ParallelResultStrategy.OR) {
             this.resultParallel = false
         }
-        this.resultParallelMessage = ''
+        this.resultParallelMessage = ""
     }
 
-    def updateResultParallel(boolean result) {
+    def updateResultParallel(String result) {
+        boolean verdict = getVerdict(result)
         if (this.parallelResultStrategy == ParallelResultStrategy.AND) {
-            this.resultParallel &= result
+            this.resultParallel &= verdict
         }
         else if (this.parallelResultStrategy == ParallelResultStrategy.OR) {
-            this.resultParallel |= result
+            this.resultParallel |= verdict
         }
     }
 
     def buildParalleJob(String jobId) {
         String result = buildJob(jobId);
-        updateResultParallel(getVerdict(result))
-        if (this.resultParallelMessage != '') {
-            this.resultParallelMessage += ', '
+        updateResultParallel(result)
+
+        if (this.resultParallelMessage != "") {
+            this.resultParallelMessage += ", "
         }
-        this.resultParallelMessage += jobId "=" + result
+        this.resultParallelMessage += (jobId + "=" + result)
     }
 
     def buildJob(String jobId) {
@@ -72,7 +74,7 @@ class orchestrator implements Serializable {
     }
 
     def getVerdict(String result) {
-        boolean verdict = (result == 'SUCCESS')
+        boolean verdict = (result == "SUCCESS")
         if (!verdict && this.exitCondition == OrchestrationExitCondition.EXIT_ON_FAIL) {
             this.@context.error(result)
         }
