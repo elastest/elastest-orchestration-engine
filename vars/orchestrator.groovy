@@ -3,7 +3,7 @@ class orchestrator implements Serializable {
     def context
     boolean resultParallel
     String resultParallelMessage
-    ParallelResultStrategy parallelResultStrategy = ParallelResultStrategy.AND
+    ParallelResultStrategy parallelResultStrategy = ParallelResultStrategy.OR
     OrchestrationExitCondition exitCondition = OrchestrationExitCondition.EXIT_ON_PARALLEL_FAILURE
 
     def runJob(String jobId) {
