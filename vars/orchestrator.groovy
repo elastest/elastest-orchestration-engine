@@ -3,8 +3,8 @@ class orchestrator implements Serializable {
     def context
     boolean resultParallel
     String resultParallelMessage
-    ParallelResultStrategy parallelResultStrategy = ParallelResultStrategy.OR
-    OrchestrationExitCondition exitCondition = OrchestrationExitCondition.EXIT_ON_PARALLEL_FAILURE
+    ParallelResultStrategy parallelResultStrategy = ParallelResultStrategy.AND
+    OrchestrationExitCondition exitCondition = OrchestrationExitCondition.EXIT_AT_END
 
     def runJob(String jobId) {
         this.@context.stage(jobId) { return getVerdict(buildJob(jobId)) }
@@ -87,5 +87,9 @@ class orchestrator implements Serializable {
 
     def setParallelResultStrategy(strategy){
         this.parallelResultStrategy = strategy
+    }
+
+    def setExitCondition(condition){
+        this.exitCondition = condition
     }
 }
