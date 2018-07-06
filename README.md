@@ -3,13 +3,33 @@
 
 [![][ElasTest Logo]][ElasTest]
 
-Copyright Â© 2017-2019 [<member>]. Licensed under
-[Apache 2.0 License].
+Copyright © 2017-2019 [Universidad Rey Juan Carlos]. Licensed under [Apache 2.0 License].
 
-elastest-orchestration-engine
+Elastest Orchestration Engine
 =============================
 
-ElasTest Orchestration Engine (EOE). Component aimed to select, sequence, and run jobs in parallel within ElasTest.
+The ElasTest Orchestration Engine (EOE) is the component responsible of implementing the concept of orchestration within Elastest, understood as a novel way to select, order, and execute a group of TJobs. To that aim, we have leveraged the pipelines Jenkins notation for the topology generation by means of a [Jenkins shared library]. This library exposes a simple API to orchestrate testing jobs. The orchestrator library API is summarized in the following table:
+
+Method | Description
+--- | ---
+`runJob(String jobId)` |  Method to run a job given its identifier (*jobId*).This method returns a boolean value: `true` if the execution of the job finishes correctly and `false` if fails
+`runJobDependingOn(boolean verdict, String job1Id, String job2Id)` |  Method allows to run one job given a boolean value (typically a verdict from another job). This boolean value is passes in the first argument (called verdict in the method signature). If this value job with identifier `job1Id` is executed. Otherwise it is executed `job2Id`
+`runJobsInParallel(String... jobs)` |  This method allows to run a set of jobs in parallel. The jobs identifier are passes using a variable number of arguments (*varargs*)
+
+Moreover, the exit condition for the orchestrated job can be also configured:
+
+Method | Description
+--- | ---
+`EXIT_AT_END` |  The orchestration finishes at the end (option by default)
+`EXIT_ON_FAIL` |  The orchestration finishes when any of the TJobs fail
+`EXIT_ON_PARALLEL_FAILURE` |  The orchestration finishes when any a set of parallel TJobs fail
+
+Finally, the verdict of a group of parallel jobs can be also configured:
+
+Method | Description
+--- | ---
+`AND` |  The verdict of a set of jobs executed in parallel is `true` only if all the jobs finish correctly
+`OR` |  The verdict of parallel jobs is `true` when at least one of the jobs finishes correctly
 
 What is ElasTest
 -----------------
@@ -104,4 +124,5 @@ Mailing List] and through [StackOverflow] using the tag *elastest*.
 [GitHub ElasTest Group]: https://github.com/elastest
 [GitHub ElasTest Bugtracker]: https://github.com/elastest/bugtracker
 [StackOverflow]: http://stackoverflow.com/questions/tagged/elastest
-[<member>]: <member_url>
+[Universidad Rey Juan Carlos]: https://www.urjc.es/
+[Jenkins shared library]: https://jenkins.io/doc/book/pipeline/shared-libraries/
