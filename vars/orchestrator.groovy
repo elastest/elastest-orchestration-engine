@@ -10,8 +10,8 @@ class orchestrator implements Serializable {
         this.@context.stage(jobId) { return getVerdict(buildJob(jobId)) }
     }
 
-    def runJobDependingOn(boolean result, String job1Id, String job2Id) {
-        if (result) {
+    def runJobDependingOn(boolean verdict, String job1Id, String job2Id) {
+        if (verdict) {
             return runJob(job1Id)
         }
         else {
@@ -81,15 +81,15 @@ class orchestrator implements Serializable {
         return verdict
     }
 
-    def setContext(ctx){
+    def setContext(ctx) {
         this.@context = ctx
     }
 
-    def setParallelResultStrategy(strategy){
+    def setParallelResultStrategy(strategy) {
         this.parallelResultStrategy = strategy
     }
 
-    def setExitCondition(condition){
+    def setExitCondition(condition) {
         this.exitCondition = condition
     }
 }
