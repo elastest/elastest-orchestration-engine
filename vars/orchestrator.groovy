@@ -6,26 +6,26 @@ class orchestrator implements Serializable {
     ParallelResultStrategy parallelResultStrategy = ParallelResultStrategy.AND
     OrchestrationExitCondition exitCondition = OrchestrationExitCondition.EXIT_AT_END
 
-    def runJob(String jobId) {
-        this.@context.stage(jobId) { return getVerdict(buildJob(jobId)) }
+    def runJob(String jobId, Map vars) {
+        this.@context.stage(jobId) { return getVerdict(buildJob(jobId, vars)) }
     }
 
-    def runJobDependingOn(boolean verdict, String job1Id, String job2Id) {
+    def runJobDependingOn(boolean verdict, String job1Id, String job2Id, Map vars) {
         if (verdict) {
-            return runJob(job1Id)
+            return runJob(job1Id, vars)
         }
         else {
-            return runJob(job2Id)
+            return runJob(job2Id, vars)
         }
     }
 
-    def runJobsInParallel(String... jobs) {
+    def runJobsInParallel(String... jobs, Map vars) {
         initResultParallel()
         this.@context.stage(jobs.join(", ")) {
             def stepsForParallel = [:]
             for (int i = 0; i < jobs.length; i++) {
                 def job = jobs[i]
-                stepsForParallel["${job}"] = { -> buildParalleJob("${job}") }
+                stepsForParallel["${job}"] = { -> buildParalleJob("${job}", vars) }
             }
             this.@context.parallel stepsForParallel
 
@@ -58,8 +58,8 @@ class orchestrator implements Serializable {
         }
     }
 
-    def buildParalleJob(String jobId) {
-        String result = buildJob(jobId);
+    def buildParalleJob(String jobId, Map vars) {
+        String result = buildJob(jobId, vars);
         updateResultParallel(result)
 
         if (this.resultParallelMessage != "") {
@@ -68,8 +68,12 @@ class orchestrator implements Serializable {
         this.resultParallelMessage += (jobId + "=" + result)
     }
 
-    def buildJob(String jobId) {
-        def job = this.@context.build job: jobId, propagate: false
+    def buildJob(String jobId, Map vars) { //map vars = [ip : "a.b.c.d", ...]
+    	parameters := []
+	map.each {key, val ->
+		parameters += [$class: 'StringParameterValue', name: k, value: v]
+	}
+        def job = this.@context.build job: jobId, propagate: false, parameters: parameters
         return job.getResult()
     }
 
