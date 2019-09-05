@@ -19,7 +19,7 @@ class orchestrator implements Serializable {
         }
     }
 
-    def runJobsInParallel(String... jobs, Map vars) {
+    def runJobsInParallel(Map vars, String... jobs) {
         initResultParallel()
         this.@context.stage(jobs.join(", ")) {
             def stepsForParallel = [:]
