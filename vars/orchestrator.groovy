@@ -69,7 +69,7 @@ class orchestrator implements Serializable {
     }
 
     def buildJob(String jobId, Map vars) { //map vars = [ip : "a.b.c.d", ...]
-    	parameters := []
+    	def parameters = [:]
 	map.each {key, val ->
 		parameters += [$class: 'StringParameterValue', name: k, value: v]
 	}
