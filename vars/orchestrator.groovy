@@ -69,11 +69,11 @@ class orchestrator implements Serializable {
     }
 
     def buildJob(String jobId, Map vars) { //map vars = [ip : "a.b.c.d", ...]
-    	def params = [:]
+    	/*def params = [:]
 	vars.each {key, val ->
-		params.put([$class: 'StringParameterValue', name: key, value: val])
-	}
-        def job = this.@context.build job: jobId, propagate: false, parameters: params
+		params += [$class: 'StringParameterValue', name: key, value: val]
+	}*/
+        def job = this.@context.build job: jobId, propagate: false, parameters: vars //params
         return job.getResult()
     }
 
