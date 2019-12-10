@@ -6,6 +6,9 @@ class orchestrator implements Serializable {
     ParallelResultStrategy parallelResultStrategy = ParallelResultStrategy.AND
     OrchestrationExitCondition exitCondition = OrchestrationExitCondition.EXIT_AT_END
 
+    def packetLossArray = []
+    def cpuBurstArray = []
+
     def runJob(String jobId, Map vars) {
         this.@context.stage(jobId) { return getVerdict(buildJob(jobId, vars)) }
     }
@@ -25,7 +28,7 @@ class orchestrator implements Serializable {
             def stepsForParallel = [:]
             for (int i = 0; i < jobs.length; i++) {
                 def job = jobs[i]
-                stepsForParallel["${job}"] = { -> buildParalleJob("${job}", vars) }
+                stepsForParallel["${job}"] = { -> buildParallelJob("${job}", vars) }
             }
             this.@context.parallel stepsForParallel
 
@@ -58,7 +61,7 @@ class orchestrator implements Serializable {
         }
     }
 
-    def buildParalleJob(String jobId, Map vars) {
+    def buildParallelJob(String jobId, Map vars) {
         String result = buildJob(jobId, vars);
         updateResultParallel(result)
 
@@ -68,11 +71,12 @@ class orchestrator implements Serializable {
         this.resultParallelMessage += (jobId + "=" + result)
     }
 
-    def buildJob(String jobId, Map vars) { //map vars = [ip : "a.b.c.d", ...]
-    	def params = []
-	vars.each {key, val ->
-		params += [$class: 'StringParameterValue', name: key, value: val]
-	}
+    def buildJob(String jobId, Map vars) {
+        //map vars = [ip : "a.b.c.d", ...]
+        def params = []
+        vars.each {key, val ->
+            params += [$class: 'StringParameterValue', name: key, value: val]
+        }
         def job = this.@context.build job: jobId, propagate: false, parameters: params
         return job.getResult()
     }
@@ -95,5 +99,13 @@ class orchestrator implements Serializable {
 
     def setExitCondition(condition) {
         this.exitCondition = condition
+    }
+
+    def setPacketLoss(pLArr) {
+        this.packetLossArray = pLArr
+    }
+
+    def setCpuBurst(cBArr) {
+        this.cpuBurstArray = cBArr
     }
 }
