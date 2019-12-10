@@ -10,7 +10,43 @@ class orchestrator implements Serializable {
     def cpuBurstArray = []
 
     def runJob(String jobId, Map vars) {
-        this.@context.stage(jobId) { return getVerdict(buildJob(jobId, vars)) }
+        // Normal build
+        if(packetLossArray.size() == 0 && cpuBurstArray.size() == 0) {
+            this.@context.stage(jobId) { return getVerdict(buildJob(jobId, vars)) }
+        }else { // Multi configuration Job
+
+            // packetloss + cpuburst
+            if(packetLossArray.size() > 0 && cpuBurstArray.size() > 0) {
+                packetLossArray.each { packetLossValue ->
+                    cpuBurstArray.each { cpuBurstValue ->
+                        def varsAux = vars.clone()
+                        varsAux['ET_EIM_CONTROLLABILLITY_PACKETLOSS'] = packetLossValue
+                        varsAux['ET_EIM_CONTROLLABILLITY_CPUBURST'] = cpuBurstValue
+
+                        this.@context.stage(jobId) { return getVerdict(buildJob(jobId, varsAux)) }
+                    }
+                }
+            }else {
+                // packetloss only
+                if(packetLossArray.size() > 0) {
+                    packetLossArray.each { packetLossValue ->
+                        def varsAux = vars.clone()
+                        varsAux['ET_EIM_CONTROLLABILLITY_PACKETLOSS'] = packetLossValue
+                        this.@context.stage(jobId) { return getVerdict(buildJob(jobId, varsAux)) }
+                    }
+                }else { // cpuburst only
+                    cpuBurstArray.each { cpuBurstValue ->
+                        def varsAux = vars.clone()
+                        varsAux['ET_EIM_CONTROLLABILLITY_CPUBURST'] = cpuBurstValue
+                        this.@context.stage(jobId) { return getVerdict(buildJob(jobId, varsAux)) }
+                    }
+                }
+            }
+        }
+    }
+    
+    def runJob(String jobId) {
+        runJob(jobId, [])
     }
 
     def runJobDependingOn(boolean verdict, String job1Id, String job2Id, Map vars) {
