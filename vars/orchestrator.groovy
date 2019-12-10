@@ -44,9 +44,9 @@ class orchestrator implements Serializable {
             }
         }
     }
-    
+
     def runJob(String jobId) {
-        runJob(jobId, [])
+        runJob(jobId, [:])
     }
 
     def runJobDependingOn(boolean verdict, String job1Id, String job2Id, Map vars) {
