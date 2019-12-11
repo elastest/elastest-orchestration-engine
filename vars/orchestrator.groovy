@@ -14,8 +14,7 @@ class orchestrator implements Serializable {
         if(packetLossArray.size() == 0 && cpuBurstArray.size() == 0) {
             this.@context.stage(jobId) { return getVerdict(buildJob(jobId, vars)) }
         }else { // Multi configuration Job
-
-            // packetloss + cpuburst
+            // packetloss + cpuburst (currently does not work due to EIM limitations)
             if(packetLossArray.size() > 0 && cpuBurstArray.size() > 0) {
                 packetLossArray.each { packetLossValue ->
                     cpuBurstArray.each { cpuBurstValue ->
