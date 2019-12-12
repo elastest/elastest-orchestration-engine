@@ -125,7 +125,7 @@ class orchestrator implements Serializable {
 
         // If check time comparison activated
         if(compare != null && compareTimeInMillis > 0) {
-            long buildTime = jobBuild.getTimeInMillis()
+            long buildTime = jobBuild.getTimeInMillis() - jobBuild.getStartTimeInMillis()
             println "buildTime: "+ buildTime
             println "compareTimeInMillis: "+ compareTimeInMillis
             verdict = verdict && compare.eval(buildTime, compareTimeInMillis)
@@ -158,7 +158,7 @@ class orchestrator implements Serializable {
     }
 
     def checkTime(Compare compare, time, TimeUnit timeUnit) {
-        println "Check time activated! with " + time + " " + timeUnit
+        println "Check time activated with limit of " + time + " " + timeUnit
         long timeInMillis = timeUnit.convertToMillis(time)
         this.compare = compare
         this.compareTimeInMillis = timeInMillis
