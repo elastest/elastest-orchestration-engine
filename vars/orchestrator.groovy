@@ -122,16 +122,15 @@ class orchestrator implements Serializable {
     def getVerdict(jobBuild) {
         String result = jobBuild.getResult()
         boolean verdict = (result == "SUCCESS")
-        
+
+        // If check time comparison activated
         if(compare != null && compareTimeInMillis > 0) {
             long buildTime = jobBuild.getTimeInMillis()
-            boolean less = compare.eval(buildTime, compareTimeInMillis)
-            println "DEBUG11!"
-            println less
-            
-            
+            println "buildTime: "+ buildTime
+            println "compareTimeInMillis: "+ compareTimeInMillis
+            verdict = verdict && compare.eval(buildTime, compareTimeInMillis)
         }
-        
+
         if (!verdict && this.exitCondition == OrchestrationExitCondition.EXIT_ON_FAIL) {
             this.@context.error(result)
         }
@@ -159,6 +158,7 @@ class orchestrator implements Serializable {
     }
 
     def checkTime(Compare compare, time, TimeUnit timeUnit) {
+        println "Check time activated! with " + time + " " + timeUnit
         long timeInMillis = timeUnit.convertToMillis(time)
         this.compare = compare
         this.compareTimeInMillis = timeInMillis
