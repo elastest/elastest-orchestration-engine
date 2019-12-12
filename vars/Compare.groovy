@@ -1,20 +1,19 @@
 enum Compare {
-    
-    LessThan, GreaterThan
-    
-//    LessThan {
-//        @Override
-//        public boolean eval(val1, val2) {
-//            return val1 < val2
-//        }
-//    },
-//    GreaterThan {
-//        @Override
-//        public boolean eval(val1, val2) {
-//            return val1 > val2
-//        }
-//    };
-//
-//
-//    public abstract boolean eval(val1, val2);
+
+    LessThan("LessThan"),
+    GreaterThan("GreaterThan")
+
+    String value;
+
+    private Compare(String value) {
+        this.value = value
+    }
+
+    public eval(val1, val2) {
+        if("GreaterThan".equals(this.value)) {
+            return val1 > val2;
+        } else {
+            return val1 < val2;
+        }
+    }
 }
