@@ -119,7 +119,7 @@ class orchestrator implements Serializable {
         return job
     }
 
-    def getVerdict(RunT jobBuild) {
+    def getVerdict(jobBuild) {
         String result = jobBuild.getResult()
         boolean verdict = (result == "SUCCESS")
         
