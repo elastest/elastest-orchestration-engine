@@ -37,6 +37,7 @@ Method | Description | Use Example
 --- | --- | ---
 `setPacketLoss` | If a SuT instrumented By ElasTest through EIM is used, one or more packet loss values can be set. If more than one is specified, the job will be run as many times as there are values. | setPacketLoss(['0.01', '0.02'])
 `setCpuBurst` | If a SuT instrumented By ElasTest through EIM is used, one or more cpu burst (stress) values can be set. If more than one is specified, the job will be run as many times as there are values. | setCpuBurst(['0.2'])
+`checkTime` | Allows to check if an execution lasts less (LessThan) or more (GreaterThan) than the indicated time (In milliseconds, seconds, minutes, etc.). | checkTime(Compare.LessThan, 60, TimeUnit.SECONDS)
 
 At the moment, only packet loss and cpu burst can be set separately, so the two cannot be set at the same time.
 
