@@ -9,6 +9,9 @@ class orchestrator implements Serializable {
     def packetLossArray = []
     def cpuBurstArray = []
 
+    long compareTimeInMillis = 0
+    Compare compare
+
     def runJob(String jobId, Map vars) {
         // Normal build
         if(packetLossArray.size() == 0 && cpuBurstArray.size() == 0) {
@@ -97,7 +100,7 @@ class orchestrator implements Serializable {
     }
 
     def buildParallelJob(String jobId, Map vars) {
-        String result = buildJob(jobId, vars);
+        String result = buildJob(jobId, vars).getResult();
         updateResultParallel(result)
 
         if (this.resultParallelMessage != "") {
@@ -113,11 +116,22 @@ class orchestrator implements Serializable {
             params += [$class: 'StringParameterValue', name: key, value: val]
         }
         def job = this.@context.build job: jobId, propagate: false, parameters: params
-        return job.getResult()
+        return job
     }
 
-    def getVerdict(String result) {
+    def getVerdict(RunT jobBuild) {
+        String result = jobBuild.getResult()
         boolean verdict = (result == "SUCCESS")
+        
+        if(compare != null && compareTimeInMillis > 0) {
+            long buildTime = jobBuild.getTimeInMillis()
+            boolean less = compare.eval(buildTime, compareTimeInMillis)
+            println "DEBUG11!"
+            println less
+            
+            
+        }
+        
         if (!verdict && this.exitCondition == OrchestrationExitCondition.EXIT_ON_FAIL) {
             this.@context.error(result)
         }
@@ -142,5 +156,11 @@ class orchestrator implements Serializable {
 
     def setCpuBurst(cBArr) {
         this.cpuBurstArray = cBArr
+    }
+
+    def checkTime(Compare compare, time, TimeUnit timeUnit) {
+        long timeInMillis = timeUnit.convertToMillis(time)
+        this.compare = compare
+        this.compareTimeInMillis = timeInMillis
     }
 }
