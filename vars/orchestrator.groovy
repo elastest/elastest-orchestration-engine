@@ -126,9 +126,9 @@ class orchestrator implements Serializable {
         // If check time comparison activated
         if(compare != null && compareTimeInMillis > 0) {
             long buildDuration = jobBuild.getDuration()
-            println "buildTime: "+ buildTime
+            println "buildTime: "+ buildDuration
             println "compareTimeInMillis: "+ compareTimeInMillis
-            verdict = verdict && compare.eval(buildTime, compareTimeInMillis)
+            verdict = verdict && compare.eval(buildDuration, compareTimeInMillis)
         }
 
         if (!verdict && this.exitCondition == OrchestrationExitCondition.EXIT_ON_FAIL) {
