@@ -6,8 +6,49 @@ class orchestrator implements Serializable {
     ParallelResultStrategy parallelResultStrategy = ParallelResultStrategy.AND
     OrchestrationExitCondition exitCondition = OrchestrationExitCondition.EXIT_AT_END
 
+    def packetLossArray = []
+    def cpuBurstArray = []
+
+    long compareTimeInMillis = 0
+    Compare compare
+
     def runJob(String jobId, Map vars) {
-        this.@context.stage(jobId) { return getVerdict(buildJob(jobId, vars)) }
+        // Normal build
+        if(packetLossArray.size() == 0 && cpuBurstArray.size() == 0) {
+            this.@context.stage(jobId) { return getVerdict(buildJob(jobId, vars)) }
+        }else { // Multi configuration Job
+            // packetloss + cpuburst (currently does not work due to EIM limitations)
+            if(packetLossArray.size() > 0 && cpuBurstArray.size() > 0) {
+                packetLossArray.each { packetLossValue ->
+                    cpuBurstArray.each { cpuBurstValue ->
+                        def varsAux = vars.clone()
+                        varsAux['ET_EIM_CONTROLLABILLITY_PACKETLOSS'] = packetLossValue
+                        varsAux['ET_EIM_CONTROLLABILLITY_CPUBURST'] = cpuBurstValue
+
+                        this.@context.stage(jobId) { return getVerdict(buildJob(jobId, varsAux)) }
+                    }
+                }
+            }else {
+                // packetloss only
+                if(packetLossArray.size() > 0) {
+                    packetLossArray.each { packetLossValue ->
+                        def varsAux = vars.clone()
+                        varsAux['ET_EIM_CONTROLLABILLITY_PACKETLOSS'] = packetLossValue
+                        this.@context.stage(jobId) { return getVerdict(buildJob(jobId, varsAux)) }
+                    }
+                }else { // cpuburst only
+                    cpuBurstArray.each { cpuBurstValue ->
+                        def varsAux = vars.clone()
+                        varsAux['ET_EIM_CONTROLLABILLITY_CPUBURST'] = cpuBurstValue
+                        this.@context.stage(jobId) { return getVerdict(buildJob(jobId, varsAux)) }
+                    }
+                }
+            }
+        }
+    }
+
+    def runJob(String jobId) {
+        runJob(jobId, [:])
     }
 
     def runJobDependingOn(boolean verdict, String job1Id, String job2Id, Map vars) {
@@ -25,7 +66,7 @@ class orchestrator implements Serializable {
             def stepsForParallel = [:]
             for (int i = 0; i < jobs.length; i++) {
                 def job = jobs[i]
-                stepsForParallel["${job}"] = { -> buildParalleJob("${job}", vars) }
+                stepsForParallel["${job}"] = { -> buildParallelJob("${job}", vars) }
             }
             this.@context.parallel stepsForParallel
 
@@ -58,8 +99,8 @@ class orchestrator implements Serializable {
         }
     }
 
-    def buildParalleJob(String jobId, Map vars) {
-        String result = buildJob(jobId, vars);
+    def buildParallelJob(String jobId, Map vars) {
+        String result = buildJob(jobId, vars).getResult();
         updateResultParallel(result)
 
         if (this.resultParallelMessage != "") {
@@ -68,17 +109,30 @@ class orchestrator implements Serializable {
         this.resultParallelMessage += (jobId + "=" + result)
     }
 
-    def buildJob(String jobId, Map vars) { //map vars = [ip : "a.b.c.d", ...]
-    	def params = []
-	vars.each {key, val ->
-		params += [$class: 'StringParameterValue', name: key, value: val]
-	}
+    def buildJob(String jobId, Map vars) {
+        //map vars = [ip : "a.b.c.d", ...]
+        def params = []
+        vars.each {key, val ->
+            params += [$class: 'StringParameterValue', name: key, value: val]
+        }
         def job = this.@context.build job: jobId, propagate: false, parameters: params
-        return job.getResult()
+        return job
     }
 
-    def getVerdict(String result) {
+    def getVerdict(jobBuild) {
+        String result = jobBuild.getResult()
         boolean verdict = (result == "SUCCESS")
+
+        // If check time comparison activated
+        if(compare != null && compareTimeInMillis > 0) {
+            long buildDuration = jobBuild.getDuration()
+            println "Checking Time => build duration:  " + buildDuration + " | expected time: " + compare + " " + compareTimeInMillis
+            boolean correctTime = compare.eval(buildDuration, compareTimeInMillis)
+            println "Correct time?: " + correctTime
+
+            verdict = verdict && correctTime
+        }
+
         if (!verdict && this.exitCondition == OrchestrationExitCondition.EXIT_ON_FAIL) {
             this.@context.error(result)
         }
@@ -95,5 +149,20 @@ class orchestrator implements Serializable {
 
     def setExitCondition(condition) {
         this.exitCondition = condition
+    }
+
+    def setPacketLoss(pLArr) {
+        this.packetLossArray = pLArr
+    }
+
+    def setCpuBurst(cBArr) {
+        this.cpuBurstArray = cBArr
+    }
+
+    def checkTime(Compare compare, time, TimeUnit timeUnit) {
+        println "Check time activated with limit of " + time + " " + timeUnit
+        long timeInMillis = timeUnit.convertToMillis(time)
+        this.compare = compare
+        this.compareTimeInMillis = timeInMillis
     }
 }
