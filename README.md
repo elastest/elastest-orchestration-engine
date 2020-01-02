@@ -3,7 +3,7 @@
 
 [![][ElasTest Logo]][ElasTest]
 
-Copyright © 2017-2019 [Universidad Rey Juan Carlos]. Licensed under [Apache 2.0 License].
+Copyright Â© 2017-2019 [Universidad Rey Juan Carlos]. Licensed under [Apache 2.0 License].
 
 Elastest Orchestration Engine
 =============================
@@ -40,6 +40,17 @@ Method | Description | Use Example
 `checkTime` | Allows to check if an execution lasts less (LessThan) or more (GreaterThan) than the indicated time (In milliseconds, seconds, minutes, etc.). | checkTime(Compare.LessThan, 60, TimeUnit.SECONDS)
 
 At the moment, only packet loss and cpu burst can be set separately, so the two cannot be set at the same time.
+
+How to install
+-----------------
+- Navigate to *Manage Jenkins* in your Jenkins.
+- Click to *System Configuration*
+- Add new library in *Global Pipeline Libraries* with name **OrchestrationLib** and default version **master**
+- Select **Modern SCM**
+- Select **GitHub**
+- Owner: **elastest**
+- Repository: **elastest-orchestration-engine**
+- Save changes
 
 What is ElasTest
 -----------------
